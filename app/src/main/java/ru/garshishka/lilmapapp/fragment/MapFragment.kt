@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -18,12 +19,15 @@ import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.snackbar.Snackbar
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import ru.garshishka.lilmapapp.R
@@ -47,6 +51,7 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
     lateinit var mMap: MapView
     lateinit var controller: IMapController
     lateinit var mMyLocationOverlay: MyLocationNewOverlay
+    lateinit var mainMarker: Marker
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +67,42 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
             context?.getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
         )
 
+        setUpMap()
+
+        setUpTaps()
+
+        setUpButtons()
+
+        return binding.root
+    }
+
+    private fun setUpTaps() {
+        val tapOverlay = MapEventsOverlay(object : MapEventsReceiver{
+            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                p?.let {
+                    if (!::mainMarker.isInitialized){
+                        mainMarker = Marker(mMap)
+                        mainMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                        mainMarker.icon = requireContext().getDrawable(R.drawable.baseline_center_24)
+                        mMap.overlays.add(mainMarker)
+                    }
+                    mainMarker.position = GeoPoint(p.latitude, p.longitude)
+                    mMap.invalidate()
+                }
+                return true
+            }
+
+            override fun longPressHelper(p: GeoPoint?): Boolean {
+                Log.d("singleTapConfirmedHelper", "${p?.latitude} - ${p?.longitude}")
+                return true
+            }
+
+        })
+
+        mMap.overlays.add(tapOverlay)
+    }
+
+    private fun setUpMap() {
         mMap = binding.osmmap
         mMap.setTileSource(TileSourceFactory.MAPNIK)
         mMap.mapCenter
@@ -75,11 +116,7 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
         //mMyLocationOverlay.enableFollowLocation()
         mMyLocationOverlay.isDrawAccuracyEnabled = true
 
-
         controller.setZoom(17.5)
-
-        Log.i("TAG", "onCreate:in ${controller.zoomIn()}")
-        Log.i("TAG", "onCreate: out  ${controller.zoomOut()}")
 
         val mapPoint = GeoPoint(55.748225, 37.625184)
         controller.animateTo(mapPoint)
@@ -87,15 +124,26 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
         mMap.overlays.add(mMyLocationOverlay)
 
         mMap.addMapListener(this)
+    }
 
+    private fun setUpButtons() {
         binding.apply {
+            centerButton.setOnClickListener {
+                if (::mainMarker.isInitialized){
+                    controller.animateTo(mainMarker.position)
+                } else{
+                    Toast.makeText(requireContext(),R.string.no_main_point,Toast.LENGTH_LONG).show()
+                }
+            }
             focusButton.setOnClickListener {
-                it.setBackgroundColor(if(focusOn) requireContext().getColor(R.color.focus_on) else requireContext().getColor(R.color.focus_off))
+                it.setBackgroundColor(
+                    if (focusOn) requireContext().getColor(R.color.focus_on) else requireContext().getColor(
+                        R.color.focus_off
+                    )
+                )
                 focusOn = !focusOn
             }
         }
-
-        return binding.root
     }
 
     override fun onScroll(event: ScrollEvent?): Boolean {
