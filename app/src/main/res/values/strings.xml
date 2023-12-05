@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">LilMapApp</string>
+    <string name="no_user_location_error">Can\'t find your location yet</string>
+    <string name="retry">Retry</string>
+    <string name="need_geolocation">You need geolocation permission to use this feature</string>
+    <string name="permission">Permission</string>
+    <string name="center_on_point">Center on point</string>
+    <string name="focus_on">Focus on</string>
+    <string name="focus_off">Focus off</string>
+    <string name="menu">Menu</string>
 </resources>
