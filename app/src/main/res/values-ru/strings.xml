@@ -10,4 +10,10 @@
     <string name="menu">Меню</string>
     <string name="focus_off">Фокус Выкл.</string>
     <string name="no_main_point">Точка не установлена!</string>
+    <string name="category_1">Категория 1</string>
+    <string name="category_2">Категория 2</string>
+    <string name="position_1">Позиция 1</string>
+    <string name="position_2">Позиция 2</string>
+    <string name="position_3">Позиция 3</string>
+    <string name="position_4">Позиция 4</string>
 </resources>

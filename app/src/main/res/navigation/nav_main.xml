@@ -7,5 +7,40 @@
     <fragment
         android:id="@+id/mapFragment"
         android:name="ru.garshishka.lilmapapp.fragment.MapFragment"
-        android:label="MapFragment" />
+        android:label="MapFragment" >
+        <action
+            android:id="@+id/action_mapFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/menuFragment"
+        android:name="ru.garshishka.lilmapapp.fragment.MenuFragment"
+        android:label="MenuFragment" >
+        <action
+            android:id="@+id/action_menuFragment_to_categoryOneFragment"
+            app:destination="@id/categoryOneFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_categoryTwoFragment"
+            app:destination="@id/categoryTwoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/categoryOneFragment"
+        android:name="ru.garshishka.lilmapapp.fragment.CategoryOneFragment"
+        android:label="CategoryOneFragment" >
+        <action
+            android:id="@+id/action_categoryOneFragment_to_positionCardFragment"
+            app:destination="@id/positionCardFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/categoryTwoFragment"
+        android:name="ru.garshishka.lilmapapp.fragment.CategoryTwoFragment"
+        android:label="CategoryTwoFragment" >
+        <action
+            android:id="@+id/action_categoryTwoFragment_to_positionCardFragment"
+            app:destination="@id/positionCardFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/positionCardFragment"
+        android:name="ru.garshishka.lilmapapp.fragment.PositionCardFragment"
+        android:label="PositionCardFragment" />
 </navigation>

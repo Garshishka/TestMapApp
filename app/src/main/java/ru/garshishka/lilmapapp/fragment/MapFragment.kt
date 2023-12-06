@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import by.kirich1409.viewbindingdelegate.CreateMethod
 import by.kirich1409.viewbindingdelegate.viewBinding
 import org.osmdroid.api.IMapController
@@ -60,10 +61,10 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
     }
 
     private fun setUpTaps() {
-        val tapOverlay = MapEventsOverlay(object : MapEventsReceiver{
+        val tapOverlay = MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
                 p?.let {
-                    if (focusOn){
+                    if (focusOn) {
                         if (!::secondMarker.isInitialized) {
                             secondMarker = Marker(mMap)
                             secondMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
@@ -71,11 +72,11 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
                                 requireContext().getDrawable(R.drawable.baseline_second_location_24)
                             mMap.overlays.add(secondMarker)
                             line = Polyline(mMap)
-                            line.setPoints(listOf(mainMarker.position,secondMarker.position))
+                            line.setPoints(listOf(mainMarker.position, secondMarker.position))
                             mMap.overlays.add(line);
                         }
                         secondMarker.position = GeoPoint(p.latitude, p.longitude)
-                        line.setPoints(listOf(mainMarker.position,secondMarker.position))
+                        line.setPoints(listOf(mainMarker.position, secondMarker.position))
                     } else {
                         if (!::mainMarker.isInitialized) {
                             mainMarker = Marker(mMap)
@@ -85,8 +86,8 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
                             mMap.overlays.add(mainMarker)
                         }
                         mainMarker.position = GeoPoint(p.latitude, p.longitude)
-                        if (::secondMarker.isInitialized){
-                            line.setPoints(listOf(mainMarker.position,secondMarker.position))
+                        if (::secondMarker.isInitialized && ::line.isInitialized) {
+                            line.setPoints(listOf(mainMarker.position, secondMarker.position))
                         }
                     }
                     mMap.invalidate()
@@ -119,33 +120,62 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
         controller.animateTo(mapPoint)
 
         mMap.addMapListener(this)
+
+        if (::mainMarker.isInitialized){
+            val pos = mainMarker.position.latitude
+            mainMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            mainMarker.icon =
+                requireContext().getDrawable(R.drawable.baseline_location_24)
+            mMap.overlays.add(mainMarker)
+        }
+        if (::secondMarker.isInitialized){
+            secondMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            secondMarker.icon =
+                requireContext().getDrawable(R.drawable.baseline_second_location_24)
+            mMap.overlays.add(secondMarker)
+            line = Polyline(mMap)
+            line.setPoints(listOf(mainMarker.position, secondMarker.position))
+            mMap.overlays.add(line);
+        }
+        mMap.invalidate()
     }
 
     private fun setUpButtons() {
         binding.apply {
             centerButton.setOnClickListener {
-                if (::mainMarker.isInitialized){
+                if (::mainMarker.isInitialized) {
                     controller.animateTo(mainMarker.position)
-                } else{
-                    Toast.makeText(requireContext(),R.string.no_main_point,Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(requireContext(), R.string.no_main_point, Toast.LENGTH_LONG)
+                        .show()
                 }
             }
+            focusButton.setBackgroundColor(
+                if (!focusOn) requireContext().getColor(R.color.focus_on) else requireContext().getColor(
+                    R.color.focus_off
+                )
+            )
             focusButton.setOnClickListener {
-                if(::mainMarker.isInitialized) {
+                if (::mainMarker.isInitialized) {
+                    focusOn = !focusOn
                     it.setBackgroundColor(
-                        if (focusOn) requireContext().getColor(R.color.focus_on) else requireContext().getColor(
+                        if (!focusOn) requireContext().getColor(R.color.focus_on) else requireContext().getColor(
                             R.color.focus_off
                         )
                     )
-                    focusOn = !focusOn
-                } else{
-                    Toast.makeText(requireContext(),R.string.no_main_point,Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(requireContext(), R.string.no_main_point, Toast.LENGTH_LONG)
+                        .show()
                 }
+            }
+            menuButton.setOnClickListener {
+                findNavController().navigate(R.id.action_mapFragment_to_menuFragment)
             }
         }
     }
 
-    override fun onScroll(event: ScrollEvent?): Boolean {        return true
+    override fun onScroll(event: ScrollEvent?): Boolean {
+        return true
     }
 
     override fun onZoom(event: ZoomEvent?): Boolean {
@@ -153,6 +183,5 @@ class MapFragment : Fragment(), MapListener, GpsStatus.Listener {
     }
 
     override fun onGpsStatusChanged(event: Int) {
-        TODO("Not yet implemented")
     }
 }

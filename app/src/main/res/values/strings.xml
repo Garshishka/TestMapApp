@@ -9,4 +9,10 @@
     <string name="focus_off">Focus off</string>
     <string name="menu">Menu</string>
     <string name="no_main_point">No point on map</string>
+    <string name="category_1">Category 1</string>
+    <string name="category_2">Category 2</string>
+    <string name="position_1">Position 1</string>
+    <string name="position_2">Position 2</string>
+    <string name="position_3">Position 3</string>
+    <string name="position_4">Position 4</string>
 </resources>
